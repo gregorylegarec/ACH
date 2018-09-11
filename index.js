@@ -199,7 +199,7 @@ program
   })
 
 program
-  .command('script <scriptName>')
+  .command('script <scriptName> -- <script options>')
   .option('-x, --execute', 'Execute the script (disable dry run)')
   .option('-d, --doctypes', 'Print necessary doctypes (useful for automation)')
   .description('Launch script')
@@ -221,11 +221,13 @@ program
     } else {
       const token = program.token || autotoken(url, doctypes)
       const ach = new ACH(token, url, doctypes)
-      const dryRun = !action.execute
+      const dryRun = process.argv.findIndex(arg => arg === '-x') === -1
       log.info(`Launching script ${scriptName}...`)
       log.info(`Dry run : ${dryRun}`)
       ach.connect().then(() => {
-        return run(ach, dryRun)
+        const dashIndex = process.argv.findIndex(v => v === '--')
+        const scritptArgs = process.argv.slice(dashIndex + 1)
+        return run(ach, dryRun, scritptArgs)
       })
     }
   })
